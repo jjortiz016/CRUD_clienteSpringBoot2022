@@ -20,7 +20,7 @@
                                 </button>
                             </div>
                             <form th:action="@{/guardar}" th:object="${persona}"
-                                method="POST" class="was-validated">
+                                method="POST" class="was-validated" enctype="multipart/form-data">
                                 <div class="modal-body">
                                     <div class="form-group">
                                         <label for="nombre" th:text="#{persona.nombre}">Nombre</label>
@@ -45,6 +45,11 @@
                                     <div class="form-group">
                                         <label for="saldo" th:text="#{persona.saldo}">Saldo</label>
                                         <input type="number" class="form-control" name="saldo"  id="saldo" required step="any">
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="file" class="form-label">Subir foto</label>
+                                        <input class="form-control" type="file" name="file" id="file">
                                     </div>
 
                                 </div>

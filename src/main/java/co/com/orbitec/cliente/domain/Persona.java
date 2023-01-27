@@ -44,4 +44,8 @@ public class Persona implements Serializable {
     @NotNull
     private Double saldo;
 
+    @Column (name = "foto")
+    private String foto;
+
+
 }

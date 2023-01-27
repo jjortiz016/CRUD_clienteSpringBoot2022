@@ -14,11 +14,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -58,10 +64,28 @@ public class ControladorInicio {
 
     @PostMapping("/guardar")
    // @ResponseBody
-    public String guardar(@Valid Persona persona, Errors result, RedirectAttributes redirectAttrs){
+    public String guardar(@Valid Persona persona, Errors result, @RequestParam("file") MultipartFile foto, RedirectAttributes redirectAttrs){
         if(result.hasErrors()){
                 return "modificar";
             }
+
+        if(!foto.isEmpty()){
+            Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
+            String rootPath = directorioRecursos.toFile().getAbsolutePath();
+
+            try {
+                byte[] bytes = foto.getBytes();
+                Path rutaCompleta = Paths.get(rootPath +"//"+foto.getOriginalFilename());
+                Files.write(rutaCompleta, bytes);  //escribimos el archivo
+                redirectAttrs.addFlashAttribute("mensajeFotoGuardada", "foto almacenada correctamente");
+                persona.setFoto(foto.getOriginalFilename());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
 
         /*Nota:cuando el objeto traiga un valor en el id no va a crer un nuevo registro
         si no que va actualizar el registro del id*/

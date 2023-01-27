@@ -23,6 +23,10 @@
                              th:text="${mensajeDatoGuardado}"
                              class="alert">
                         </div>
+                        <div th:classappend="'alert-' + (${clase != null} ? ${clase} : info)" th:if="${mensajeFotoGuardada != null}"
+                             th:text="${mensajeFotoGuardada}"
+                             class="alert">
+                        </div>
                         <div th:if="${personas != null and !personas.empty}">
                             <table class="table table-striped">
                                 <thead class="table-dark">

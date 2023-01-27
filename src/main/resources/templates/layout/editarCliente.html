@@ -11,7 +11,7 @@
 <body>
     <section th:fragment="editarCliente">
         <form th:action="@{/guardar}" th:object="${persona}"
-               method="POST" class="was-validated">
+               method="POST" enctype="multipart/form-data" class="was-validated">
             <input type="hidden" name="idPersona" th:field="*{id}"/>
             <section th:replace="layout/botonesEditar :: botonesEditar"></section>
             <div id="details">
@@ -23,6 +23,13 @@
 
                             </div>
                             <div class="card-body">
+
+                                <div th:if="${persona.foto!= null and persona.foto!=''}" align="center">
+                                    <!--<img class="mb-2 " src="img/logo.gif" alt="" width="200" height="200">-->
+                                    <img class="img-thumbnail rounded mb-2 " th:src="@{'/uploads/' + ${persona.foto}}" alt="" width="200" height="200">
+
+                                </div>
+
                                 <div class="form-group">
                                     <label for="nombre">[[#{persona.nombre}]]</label>
                                     <input type="text" class="form-control" name="nombre" id="nombre" required
@@ -48,6 +55,12 @@
                                     <input type="number" class="form-control" name="saldo" id="saldo" required
                                            th:field="*{saldo}" step="any"/>
                                 </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="file" class="form-label">Subir foto</label>
+                                    <input class="form-control" type="file" name="file" id="file">
+                                </div>
+
 
                             </div>
                         </div>
