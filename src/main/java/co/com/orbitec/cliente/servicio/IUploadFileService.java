@@ -9,5 +9,4 @@ public interface IUploadFileService {
     public boolean delete(String filename);
 
 
-    }
 }
