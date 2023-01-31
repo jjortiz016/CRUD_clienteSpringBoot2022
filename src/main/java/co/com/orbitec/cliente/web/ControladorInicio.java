@@ -12,20 +12,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import javax.validation.Valid;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 
 @Controller
@@ -34,6 +33,8 @@ public class ControladorInicio {
 
     @Autowired
     private IPersonaService iPersonaService;
+
+    private final static String UPLOADS_FOLDER="uploads";
 
     @GetMapping("/")
     public String inicio(Model model, @AuthenticationPrincipal User user){
@@ -63,6 +64,7 @@ public class ControladorInicio {
     }
 
     @PostMapping("/guardar")
+
    // @ResponseBody
     public String guardar(@Valid Persona persona, Errors result, @RequestParam("file") MultipartFile foto, RedirectAttributes redirectAttrs){
         if(result.hasErrors()){
@@ -70,15 +72,29 @@ public class ControladorInicio {
             }
 
         if(!foto.isEmpty()){
-            Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
-            String rootPath = directorioRecursos.toFile().getAbsolutePath();
 
+            if (persona.getId()!=null
+                    && persona.getId()>0
+                    && persona.getFoto()!=null
+                    && persona.getFoto().length()>0){
+
+                Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(persona.getFoto()).toAbsolutePath();
+                File archivo = rootPath.toFile();
+
+                if (archivo.exists() && archivo.canRead()) {
+                   archivo.delete();
+                }
+            }
+
+            String uniqueFileName= UUID.randomUUID().toString()+"_"+foto.getOriginalFilename();
+            Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(uniqueFileName);  //ruta relativa al proyecto
+            Path rootAbsolutPath= rootPath.toAbsolutePath();   //ruta completa ejemplo desde la unidad c:
+            log.info("rootPath:"+ rootPath);
+            log.info("rootAbsolutPath"+rootAbsolutPath);
             try {
-                byte[] bytes = foto.getBytes();
-                Path rutaCompleta = Paths.get(rootPath +"//"+foto.getOriginalFilename());
-                Files.write(rutaCompleta, bytes);  //escribimos el archivo
-                redirectAttrs.addFlashAttribute("mensajeFotoGuardada", "foto almacenada correctamente");
-                persona.setFoto(foto.getOriginalFilename());
+                Files.copy(foto.getInputStream(), rootAbsolutPath);
+                redirectAttrs.addFlashAttribute("mensajeFoto", "foto almacenada correctamente '"+uniqueFileName+"'");
+                persona.setFoto(uniqueFileName);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -91,14 +107,22 @@ public class ControladorInicio {
         si no que va actualizar el registro del id*/
         iPersonaService.guardar(persona);
         redirectAttrs
-                .addFlashAttribute("mensajeDatoGuardado", "Guardado correctamente")
+                .addFlashAttribute("mensajeTransaccion", "Guardado correctamente")
                 .addFlashAttribute("clase", "success");
         return "redirect:/";
     }
+
     @GetMapping("/editar/{id}")
     public String editar(Persona persona, Model model){
         persona= iPersonaService.encontrarPersona(persona);
+
+        Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(persona.getFoto()).toAbsolutePath();
+        String ruta= rootPath.toString();
+        System.out.println("rootPath = " + rootPath);
+        System.out.println("ruta = " + ruta);
+        
         model.addAttribute("persona", persona);
+        model.addAttribute("rutaFoto",ruta);
         return "modificar";
     }
     /*
@@ -109,8 +133,31 @@ public class ControladorInicio {
     }*/
     //SEGUNDA FORMAR POR QUERY PARAMETER
     @GetMapping("/eliminar")
-    public String eliminar(Persona persona){ //hace el set del id automaticamente
-        iPersonaService.eliminar(persona);
+    public String eliminar(Persona persona, RedirectAttributes redirectAttrs) { //hace el set del id automaticamente
+
+
+        if (persona.getId() > 0) {
+            Persona perEncontrada = iPersonaService.encontrarPersona(persona);
+
+          /*  System.out.println("perEncontrada = " + perEncontrada);*/
+
+            Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(perEncontrada.getFoto()).toAbsolutePath();
+            File archivo = rootPath.toFile();
+
+            iPersonaService.eliminar(persona);
+
+               redirectAttrs
+                    .addFlashAttribute("mensajeTransaccion", "Registro del cliente eliminado")
+                    .addFlashAttribute("clase", "success");
+
+
+            if (archivo.exists() && archivo.canRead()) {
+                if (archivo.delete()) {
+                    redirectAttrs.addFlashAttribute("mensajeFoto", "foto "+perEncontrada.getFoto()+" Foto eliminada correctamente ");
+                }
+            }
+        }
         return "redirect:/";
     }
+
 }

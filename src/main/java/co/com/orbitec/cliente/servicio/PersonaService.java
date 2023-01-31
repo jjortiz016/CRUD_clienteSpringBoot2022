@@ -30,7 +30,7 @@ public class PersonaService implements IPersonaService{
     }
 
     @Override
-    @Transactional (readOnly = true)
+    /*@Transactional (readOnly = true)*/
     public Persona encontrarPersona(Persona persona) {
         return repositorioPersonaDAO.findById(persona.getId()).orElse(null);
     }

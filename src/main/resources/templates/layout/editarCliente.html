@@ -12,6 +12,7 @@
     <section th:fragment="editarCliente">
         <form th:action="@{/guardar}" th:object="${persona}"
                method="POST" enctype="multipart/form-data" class="was-validated">
+
             <input type="hidden" name="idPersona" th:field="*{id}"/>
             <section th:replace="layout/botonesEditar :: botonesEditar"></section>
             <div id="details">
@@ -26,7 +27,7 @@
 
                                 <div th:if="${persona.foto!= null and persona.foto!=''}" align="center">
                                     <!--<img class="mb-2 " src="img/logo.gif" alt="" width="200" height="200">-->
-                                    <img class="img-thumbnail rounded mb-2 " th:src="@{'/uploads/' + ${persona.foto}}" alt="" width="200" height="200">
+                                    <img class="img-thumbnail rounded mb-2 " th:src="@{'/uploads/' + ${persona.foto}}" th:alt="${persona.foto}" width="200" height="200">
 
                                 </div>
 
@@ -58,7 +59,8 @@
 
                                 <div class="form-group mb-3">
                                     <label for="file" class="form-label">Subir foto</label>
-                                    <input class="form-control" type="file" name="file" id="file">
+                                    <input   th:field="*{foto}" type="text" name="foto" hidden>
+                                    <input class="form-control"  type="file" name="file" id="file">
                                 </div>
 
 

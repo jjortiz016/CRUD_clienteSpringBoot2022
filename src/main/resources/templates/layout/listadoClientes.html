@@ -19,12 +19,12 @@
                         <div class="card-header">
                             <h4>[[#{persona.titulo-lista}]]</h4>
                         </div>
-                        <div th:classappend="'alert-' + (${clase != null} ? ${clase} : info)" th:if="${mensajeDatoGuardado != null}"
-                             th:text="${mensajeDatoGuardado}"
+                        <div th:classappend="'alert-' + (${clase != null} ? ${clase} : info)" th:if="${mensajeTransaccion != null}"
+                             th:text="${mensajeTransaccion}"
                              class="alert">
                         </div>
-                        <div th:classappend="'alert-' + (${clase != null} ? ${clase} : info)" th:if="${mensajeFotoGuardada != null}"
-                             th:text="${mensajeFotoGuardada}"
+                        <div th:classappend="'alert-' + (${clase != null} ? ${clase} : info)" th:if="${mensajeFoto != null}"
+                             th:text="${mensajeFoto}"
                              class="alert">
                         </div>
                         <div th:if="${personas != null and !personas.empty}">
