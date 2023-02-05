@@ -3,6 +3,7 @@ package co.com.orbitec.cliente.web;
 
 import co.com.orbitec.cliente.domain.Persona;
 import co.com.orbitec.cliente.servicio.IPersonaService;
+import co.com.orbitec.cliente.servicio.IUploadFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +34,8 @@ public class ControladorInicio {
 
     @Autowired
     private IPersonaService iPersonaService;
+    @Autowired
+    private IUploadFileService iUploadFileService;
 
     private final static String UPLOADS_FOLDER="uploads";
 
@@ -77,28 +80,20 @@ public class ControladorInicio {
                     && persona.getId()>0
                     && persona.getFoto()!=null
                     && persona.getFoto().length()>0){
-
-                Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(persona.getFoto()).toAbsolutePath();
-                File archivo = rootPath.toFile();
-
-                if (archivo.exists() && archivo.canRead()) {
-                   archivo.delete();
-                }
+                    iUploadFileService.delete(persona.getFoto());
             }
+            String uniqueFileName=null;
 
-            String uniqueFileName= UUID.randomUUID().toString()+"_"+foto.getOriginalFilename();
-            Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(uniqueFileName);  //ruta relativa al proyecto
-            Path rootAbsolutPath= rootPath.toAbsolutePath();   //ruta completa ejemplo desde la unidad c:
-            log.info("rootPath:"+ rootPath);
-            log.info("rootAbsolutPath"+rootAbsolutPath);
             try {
-                Files.copy(foto.getInputStream(), rootAbsolutPath);
-                redirectAttrs.addFlashAttribute("mensajeFoto", "foto almacenada correctamente '"+uniqueFileName+"'");
-                persona.setFoto(uniqueFileName);
+//                Files.copy(foto.getInputStream(), rootAbsolutPath);
+               uniqueFileName= iUploadFileService.copy(foto);
+
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            redirectAttrs.addFlashAttribute("mensajeFoto", "foto almacenada correctamente '"+uniqueFileName+"'");
+            persona.setFoto(uniqueFileName);
 
 
         }
@@ -138,12 +133,7 @@ public class ControladorInicio {
 
         if (persona.getId() > 0) {
             Persona perEncontrada = iPersonaService.encontrarPersona(persona);
-
-          /*  System.out.println("perEncontrada = " + perEncontrada);*/
-
-            Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(perEncontrada.getFoto()).toAbsolutePath();
-            File archivo = rootPath.toFile();
-
+            String nombreFoto= perEncontrada.getFoto();
             iPersonaService.eliminar(persona);
 
                redirectAttrs
@@ -151,11 +141,10 @@ public class ControladorInicio {
                     .addFlashAttribute("clase", "success");
 
 
-            if (archivo.exists() && archivo.canRead()) {
-                if (archivo.delete()) {
-                    redirectAttrs.addFlashAttribute("mensajeFoto", "foto "+perEncontrada.getFoto()+" Foto eliminada correctamente ");
-                }
+            if(iUploadFileService.delete(nombreFoto)){
+                redirectAttrs.addFlashAttribute("mensajeFoto", "foto "+nombreFoto+" Foto eliminada correctamente ");
             }
+
         }
         return "redirect:/";
     }
